@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 
+# Variables globales.
+CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
+                    'OpSys', 'ScreenResolution', 'Memory']
+NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
+
 
 def inr_to_usd(inr: float) -> float:
     return inr * 0.012
@@ -35,32 +40,32 @@ def clean_laptop_dataset(unclean: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def generate_graph_png(clean: pd.DataFrame, category: str, number: str):
-    plt.figure(figsize=[20, 5])
-    plt.title(f'{category} vs. {number}')
+def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
+    plt.figure(figsize=[20, 8])
+    plt.title(f'{column_x} vs. {column_y}')
 
-    colors = sns.color_palette("husl", len(clean[category].unique()))
+    colors = sns.color_palette("husl", len(df[column_x].unique()))
     sns.barplot(
-            data=clean,
-            x=category,
-            y=number,
-            hue=category,
+            data=df,
+            x=column_x,
+            y=column_y,
+            hue=column_x,
             palette=colors)
 
-    plt.grid(axis='y', linestyle='--', linewidth=0.7, alpha=0.7)
-    plt.xticks(rotation=90)
+    plt.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    plt.xticks(rotation=90, fontsize=10)
 
-    plt.xlabel(category, fontsize=14, weight='bold')
-    plt.ylabel(number, fontsize=14, weight='bold')
+    plt.xlabel(column_x, fontsize=12, weight='bold')
+    plt.ylabel(column_y, fontsize=12, weight='bold')
 
     for p in plt.gca().patches:
         plt.gca().annotate(
-            f'{p.get_height():.0f}',
+            f'{p.get_height():.1f}',
             (p.get_x() + p.get_width() / 2., p.get_height()),
-            ha='center', va='center', fontsize=10, color='black',
+            ha='center', va='center', fontsize=8, color='black',
             weight='bold', xytext=(0, 5), textcoords='offset points')
 
-    png_path: str = f'./images/{category}_vs_{number}.png'
+    png_path: str = f'./images/{column_x}_vs_{column_y}.png'
     if os.path.exists(png_path):
         os.remove(png_path)
 
@@ -70,16 +75,7 @@ def generate_graph_png(clean: pd.DataFrame, category: str, number: str):
     print(f"Se generó '{png_path}'")
 
 
-def main() -> None:
-    CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu', 'OpSys']
-    NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
-    unclean: pd.DataFrame = pd.read_csv('laptopData.csv')
-    clean: pd.DataFrame = clean_laptop_dataset(unclean)
-    print(f"Número de filas antes de la limpieza: {unclean.shape[0]}")
-    print(f"Número de filas después de la limpieza: {clean.shape[0]}")
-
-    mkdir_if_necessary("./images/")
-
+def generate_numerical_vs_categorical_graphs(clean: pd.DataFrame) -> None:
     start_time = time.time()
 
     sns.set(style="whitegrid", palette="muted")
@@ -90,6 +86,17 @@ def main() -> None:
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Se guardaron las imágenes en {elapsed_time:.2f} segundos")
+
+
+def main() -> None:
+    unclean: pd.DataFrame = pd.read_csv('laptopData.csv')
+    print(f"Número de filas antes de la limpieza: {unclean.shape[0]}")
+
+    clean: pd.DataFrame = clean_laptop_dataset(unclean)
+    print(f"Número de filas después de la limpieza: {clean.shape[0]}")
+
+    mkdir_if_necessary("./images/")
+    generate_numerical_vs_categorical_graphs(clean)
 
 
 if __name__ == "__main__":
