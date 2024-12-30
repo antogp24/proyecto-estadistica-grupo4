@@ -8,6 +8,7 @@ import time
 CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
                     'OpSys', 'ScreenResolution', 'Memory']
 NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
+ALL_COLUMNS = CATEGORY_COLUMNS + NUMERICAL_COLUMNS
 
 
 def inr_to_usd(inr: float) -> float:
@@ -16,7 +17,7 @@ def inr_to_usd(inr: float) -> float:
 
 def mkdir_if_necessary(directory: str) -> None:
     if not os.path.exists(directory):
-        os.makedirs(directory, parents=True)
+        os.makedirs(directory)
         print(f"Se creó el directorio {directory}")
     else:
         print(f"Ya existe el directorio {directory}")
@@ -38,6 +39,28 @@ def clean_laptop_dataset(unclean: pd.DataFrame) -> pd.DataFrame:
 
     df.reset_index()
     return df
+
+
+def generate_boxplot_png(df: pd.DataFrame, column: str) -> None:
+    plt.figure(figsize=[10, 6])
+    plt.title(f'Boxplot of {column}', fontsize=16, weight='bold')
+
+    sns.set(style="whitegrid", palette="muted")
+    sns.boxplot(data=df, x=column)
+
+    plt.xlabel(column, fontsize=12, weight='bold')
+    plt.ylabel('Values', fontsize=12, weight='bold')
+
+    plt.xticks(rotation=45, fontsize=10)
+    plt.tight_layout()
+
+    png_path = f'./images/boxplots/{column}_boxplot.png'
+    if os.path.exists(png_path):
+        os.remove(png_path)
+
+    plt.savefig(png_path, dpi=300)
+    plt.close()
+    print(f"Se generó '{png_path}'")
 
 
 def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
@@ -65,7 +88,7 @@ def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
             ha='center', va='center', fontsize=8, color='black',
             weight='bold', xytext=(0, 5), textcoords='offset points')
 
-    png_path: str = f'./images/{column_x}_vs_{column_y}.png'
+    png_path: str = f'./images/versus/{column_x}_vs_{column_y}.png'
     if os.path.exists(png_path):
         os.remove(png_path)
 
@@ -76,16 +99,15 @@ def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
 
 
 def generate_numerical_vs_categorical_graphs(clean: pd.DataFrame) -> None:
-    start_time = time.time()
-
     sns.set(style="whitegrid", palette="muted")
     for category in CATEGORY_COLUMNS:
         for number in NUMERICAL_COLUMNS:
             generate_graph_png(clean, category, number)
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"Se guardaron las imágenes en {elapsed_time:.2f} segundos")
+
+def generate_numerical_boxplots(clean: pd.DataFrame) -> None:
+    for column in NUMERICAL_COLUMNS:
+        generate_boxplot_png(clean, column)
 
 
 def main() -> None:
@@ -96,7 +118,16 @@ def main() -> None:
     print(f"Número de filas después de la limpieza: {clean.shape[0]}")
 
     mkdir_if_necessary("./images/")
+    mkdir_if_necessary("./images/boxplots")
+    mkdir_if_necessary("./images/versus")
+
+    start_time: float = time.time()
+
     generate_numerical_vs_categorical_graphs(clean)
+    generate_numerical_boxplots(clean)
+
+    end_time: float = time.time()
+    print(f"Se guardaron las imágenes en {end_time - start_time:.2f} segundos")
 
 
 if __name__ == "__main__":
