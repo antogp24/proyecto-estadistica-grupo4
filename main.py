@@ -3,7 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
-import pruebas
+
+from common import plt_generate_graph
+from pruebas import (prueba_hipotesis_1,
+                     prueba_hipotesis_2,
+                     prueba_hipotesis_3)
+from regresion_lineal import regresion_lineal_anova
 
 # Variables globales.
 CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
@@ -11,7 +16,14 @@ CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
 
 NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
 
-GENERATE_VS_GRAPHS = False
+NUMERICAL_EXCEPT_PRICE = NUMERICAL_COLUMNS.copy()
+NUMERICAL_EXCEPT_PRICE.remove('Price')
+
+LINEAR_REGRESSION_PATH = './images/simple-linear-regression/'
+BOXPLOTS_PATH = './images/boxplots/'
+BAR_CHARTS_PATH = './images/versus/'
+
+ANALISIS_DESCRIPTIVO = False
 PRUEBAS_DE_HIPOTESIS = False
 REGRESION_LINEAL = True
 
@@ -62,7 +74,7 @@ def get_valid_max(corr: pd.DataFrame, column: str) -> (str, float):
     return max_column, float(max_value)
 
 
-def generate_boxplot_png(df: pd.DataFrame, column: str) -> None:
+def generate_boxplot_png(path: str, df: pd.DataFrame, column: str) -> None:
     plt.figure(figsize=[10, 6])
     plt.title(f'Boxplot of {column}', fontsize=16, weight='bold')
 
@@ -75,32 +87,26 @@ def generate_boxplot_png(df: pd.DataFrame, column: str) -> None:
     plt.xticks(rotation=45, fontsize=10)
     plt.tight_layout()
 
-    png_path = f'./images/boxplots/{column}_boxplot.png'
-    if os.path.exists(png_path):
-        os.remove(png_path)
-
-    plt.savefig(png_path, dpi=300)
-    plt.close()
-    print(f"Se generó '{png_path}'")
+    plt_generate_graph(path, f'{column}_boxplot.png', dpi=300)
 
 
-def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
+def generate_graph_png(path: str, df: pd.DataFrame, col_x: str, col_y: str):
     plt.figure(figsize=[20, 8])
-    plt.title(f'{column_x} vs. {column_y}')
+    plt.title(f'{col_x} vs. {col_y}')
 
-    colors = sns.color_palette("husl", len(df[column_x].unique()))
+    colors = sns.color_palette("husl", len(df[col_x].unique()))
     sns.barplot(
             data=df,
-            x=column_x,
-            y=column_y,
-            hue=column_x,
+            x=col_x,
+            y=col_y,
+            hue=col_x,
             palette=colors)
 
     plt.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     plt.xticks(rotation=90, fontsize=10)
 
-    plt.xlabel(column_x, fontsize=12, weight='bold')
-    plt.ylabel(column_y, fontsize=12, weight='bold')
+    plt.xlabel(col_x, fontsize=12, weight='bold')
+    plt.ylabel(col_y, fontsize=12, weight='bold')
 
     for p in plt.gca().patches:
         plt.gca().annotate(
@@ -109,26 +115,32 @@ def generate_graph_png(df: pd.DataFrame, column_x: str, column_y: str):
             ha='center', va='center', fontsize=8, color='black',
             weight='bold', xytext=(0, 5), textcoords='offset points')
 
-    png_path: str = f'./images/versus/{column_x}_vs_{column_y}.png'
-    if os.path.exists(png_path):
-        os.remove(png_path)
-
-    plt.tight_layout()
-    plt.savefig(png_path, dpi=300)
-    plt.close()
-    print(f"Se generó '{png_path}'")
+    plt_generate_graph(path,
+                       f'{col_x}_vs_{col_y}.png',
+                       dpi=300,
+                       tight_layout=True)
 
 
-def generate_numerical_vs_categorical_graphs(clean: pd.DataFrame) -> None:
+def generate_numerical_vs_categorical_graphs(path: str, clean: pd.DataFrame):
     sns.set(style="whitegrid", palette="muted")
     for category in CATEGORY_COLUMNS:
         for number in NUMERICAL_COLUMNS:
-            generate_graph_png(clean, category, number)
+            generate_graph_png(path, clean, category, number)
 
 
-def generate_numerical_boxplots(clean: pd.DataFrame) -> None:
+def generate_numerical_boxplots(path: str, clean: pd.DataFrame) -> None:
     for column in NUMERICAL_COLUMNS:
-        generate_boxplot_png(clean, column)
+        generate_boxplot_png(path, clean, column)
+
+
+def generate_X_vs_Price(path: str, clean: pd.DataFrame, X: str) -> None:
+    plt.scatter(clean[X], clean['Price'])
+
+    plt.xlabel(f'{X}')
+    plt.ylabel('Price (USD)')
+    plt.title(f'{X} vs. Price')
+
+    plt_generate_graph(path, f'{X}_vs_Price.png', dpi=300)
 
 
 def main() -> None:
@@ -138,33 +150,39 @@ def main() -> None:
     print(f"Número de filas antes de la limpieza: {unclean.shape[0]}")
     print(f"Número de filas después de la limpieza: {clean.shape[0]}\n")
 
-    if GENERATE_VS_GRAPHS:
-        mkdir_if_necessary("./images/")
-        mkdir_if_necessary("./images/boxplots")
-        mkdir_if_necessary("./images/versus")
+    mkdir_if_necessary("./images/")
+
+    if ANALISIS_DESCRIPTIVO:
+        mkdir_if_necessary(BOXPLOTS_PATH)
+        mkdir_if_necessary(BAR_CHARTS_PATH)
 
         start_time: float = time.time()
 
-        generate_numerical_vs_categorical_graphs(clean)
-        generate_numerical_boxplots(clean)
+        generate_numerical_vs_categorical_graphs(BAR_CHARTS_PATH, clean)
+        generate_numerical_boxplots(BOXPLOTS_PATH, clean)
 
         end_time: float = time.time()
         total_time: float = end_time - start_time
         print(f"Se guardaron las imágenes en {total_time:.2f} segundos")
 
     if PRUEBAS_DE_HIPOTESIS:
-        pruebas.prueba_hipotesis_1(clean)
-        print()
-        pruebas.prueba_hipotesis_2(clean)
-        print()
-        pruebas.prueba_hipotesis_3(clean)
-        print()
+        prueba_hipotesis_1(clean)
+        prueba_hipotesis_2(clean)
+        prueba_hipotesis_3(clean)
 
     if REGRESION_LINEAL:
+        mkdir_if_necessary(LINEAR_REGRESSION_PATH)
+
         corr = get_correlation_matrix(clean)
+        print(corr)
         max_category, max_corr = get_valid_max(corr, 'Price')
         print(f'La variable {max_category} tiene el mayor coeficiente', end='')
         print(f'de correlación lineal con Price, con un valor de {max_corr}\n')
+
+        for column in NUMERICAL_EXCEPT_PRICE:
+            generate_X_vs_Price(LINEAR_REGRESSION_PATH, clean, column)
+
+        regresion_lineal_anova(clean)
 
     return None
 

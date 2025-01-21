@@ -68,11 +68,11 @@ def prueba_hipotesis_1(clean):
     if t_obs > t_crit:
         print("\tTenemos evidencia para rechazar H0, por tanto las laptops")
         print("\tcon GPUs de Nvidia son más caras que las laptops con GPUs")
-        print("\tde Intel.")
+        print("\tde Intel.\n")
     else:
         print("\tTenemos evidencia para no rechazar H0, por tanto las laptops")
         print("\tcon GPUs de Nvidia son menor o igual de caras que las")
-        print("\tlaptops con GPUs de Intel.")
+        print("\tlaptops con GPUs de Intel.\n")
 
 
 def prueba_hipotesis_2(clean):
@@ -115,11 +115,11 @@ def prueba_hipotesis_2(clean):
     if Z_obs > Z_crit:
         print("\tTenemos evidencia para rechazar H0, por tanto la proporción")
         print("\tde laptops con sólo SSD es mayor que la proporción de")
-        print("\tlaptops con sólo HDD.")
+        print("\tlaptops con sólo HDD.\n")
     else:
         print("\tTenemos evidencia para no rechazar H0, por tanto la")
         print("\tproporción de laptops con sólo SSD es menor o igual que")
-        print("\tla proporción de laptops con sólo HDD.")
+        print("\tla proporción de laptops con sólo HDD.\n")
 
 
 def prueba_hipotesis_3(clean):
@@ -145,7 +145,7 @@ def prueba_hipotesis_3(clean):
     print("Conclusión:")
     if chi2_obs > chi2_crit:
         print("\tTenemos evidencia para rechazar H0, por tanto el sistema")
-        print("\toperativo es independiente del tipo de laptop.")
+        print("\toperativo es independiente del tipo de laptop.\n")
     else:
         print("\tTenemos evidencia para no rechazar H0, por tanto el")
-        print("\tsistema operativo es dependiente del tipo de laptop.")
+        print("\tsistema operativo es dependiente del tipo de laptop.\n")
