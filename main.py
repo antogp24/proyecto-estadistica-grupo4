@@ -12,7 +12,8 @@ CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
 NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
 
 GENERATE_VS_GRAPHS = False
-PRUEBAS_DE_HIPOTESIS = True
+PRUEBAS_DE_HIPOTESIS = False
+REGRESION_LINEAL = True
 
 
 def inr_to_usd(inr: float) -> float:
@@ -43,6 +44,22 @@ def clean_laptop_dataset(unclean: pd.DataFrame) -> pd.DataFrame:
 
     df.reset_index()
     return df
+
+
+def get_correlation_matrix(clean: pd.DataFrame) -> pd.DataFrame:
+    corr: pd.DataFrame = clean[NUMERICAL_COLUMNS].corr()
+    for column in NUMERICAL_COLUMNS:
+        series = corr[column]
+        corr[column] = series[series != 1]
+    return corr
+
+
+def get_valid_max(corr: pd.DataFrame, column: str) -> (str, float):
+    correlations = corr[column]
+    correlations = correlations.dropna()
+    max_column = correlations.idxmax()
+    max_value = correlations.max()
+    return max_column, float(max_value)
 
 
 def generate_boxplot_png(df: pd.DataFrame, column: str) -> None:
@@ -142,6 +159,12 @@ def main() -> None:
         print()
         pruebas.prueba_hipotesis_3(clean)
         print()
+
+    if REGRESION_LINEAL:
+        corr = get_correlation_matrix(clean)
+        max_category, max_corr = get_valid_max(corr, 'Price')
+        print(f'La variable {max_category} tiene el mayor coeficiente', end='')
+        print(f'de correlación lineal con Price, con un valor de {max_corr}\n')
 
     return None
 

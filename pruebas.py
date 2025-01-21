@@ -59,7 +59,7 @@ def prueba_hipotesis_1(clean):
     alpha = 0.05
     t_crit = stats.t.ppf(1 - alpha, df=v)
 
-    print(f"Estadístico de prueba: t_obs={t_obs:.2f}")
+    print(f"Estadístico de prueba:\n\tt_obs={t_obs:.2f}")
     print("Región Crítica:")
     print(f"\tgrados-de-libertad={v}")
     print(f"\tt_crit={t_crit:.2f}")
@@ -107,7 +107,7 @@ def prueba_hipotesis_2(clean):
     alpha = 0.05
     Z_crit = stats.norm.ppf(1 - alpha)
 
-    print(f"Estadístico de prueba: Z_obs={Z_obs:.2f}")
+    print(f"Estadístico de prueba:\n\tZ_obs={Z_obs:.2f}")
     print("Región crítica:")
     print(f"\tZ_crit={Z_crit:.2f}")
     print(f"\tC(x)=[x: Z_obs > {Z_crit:.2f}]")
@@ -136,11 +136,11 @@ def prueba_hipotesis_3(clean):
     chi2_obs, p_value, dof, expected = stats.chi2_contingency(table)
     chi2_crit = stats.chi2.ppf(1 - alpha, df=dof)
 
-    print(f"Estadístico de prueba: chi2_obs={chi2_obs:.2f}")
-    print("valor-p:")
+    print(f"Estadístico de prueba:\n\tchi2_obs={chi2_obs:.2f}")
+    print("Región crítica:")
     print(f"\tgrados-de-libertad={dof}")
     print(f"\tvalor-crítico={chi2_crit:.2f}")
-    print(f"\tp-value={p_value:.4f}")
+    print(f"\tC(x)=[x: chi2_obs > {chi2_crit:.2f}]")
 
     print("Conclusión:")
     if chi2_obs > chi2_crit:
