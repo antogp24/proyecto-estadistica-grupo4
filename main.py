@@ -3,12 +3,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
+import pruebas
 
 # Variables globales.
 CATEGORY_COLUMNS = ['Company', 'TypeName', 'Cpu', 'Gpu',
                     'OpSys', 'ScreenResolution', 'Memory']
+
 NUMERICAL_COLUMNS = ['Inches', 'Ram', 'Price', 'Weight']
-ALL_COLUMNS = CATEGORY_COLUMNS + NUMERICAL_COLUMNS
+
+GENERATE_VS_GRAPHS = False
+PRUEBAS_DE_HIPOTESIS = True
 
 
 def inr_to_usd(inr: float) -> float:
@@ -112,22 +116,34 @@ def generate_numerical_boxplots(clean: pd.DataFrame) -> None:
 
 def main() -> None:
     unclean: pd.DataFrame = pd.read_csv('laptopData.csv')
-    print(f"Número de filas antes de la limpieza: {unclean.shape[0]}")
-
     clean: pd.DataFrame = clean_laptop_dataset(unclean)
-    print(f"Número de filas después de la limpieza: {clean.shape[0]}")
 
-    mkdir_if_necessary("./images/")
-    mkdir_if_necessary("./images/boxplots")
-    mkdir_if_necessary("./images/versus")
+    print(f"Número de filas antes de la limpieza: {unclean.shape[0]}")
+    print(f"Número de filas después de la limpieza: {clean.shape[0]}\n")
 
-    start_time: float = time.time()
+    if GENERATE_VS_GRAPHS:
+        mkdir_if_necessary("./images/")
+        mkdir_if_necessary("./images/boxplots")
+        mkdir_if_necessary("./images/versus")
 
-    generate_numerical_vs_categorical_graphs(clean)
-    generate_numerical_boxplots(clean)
+        start_time: float = time.time()
 
-    end_time: float = time.time()
-    print(f"Se guardaron las imágenes en {end_time - start_time:.2f} segundos")
+        generate_numerical_vs_categorical_graphs(clean)
+        generate_numerical_boxplots(clean)
+
+        end_time: float = time.time()
+        total_time: float = end_time - start_time
+        print(f"Se guardaron las imágenes en {total_time:.2f} segundos")
+
+    if PRUEBAS_DE_HIPOTESIS:
+        pruebas.prueba_hipotesis_1(clean)
+        print()
+        pruebas.prueba_hipotesis_2(clean)
+        print()
+        pruebas.prueba_hipotesis_3(clean)
+        print()
+
+    return None
 
 
 if __name__ == "__main__":
